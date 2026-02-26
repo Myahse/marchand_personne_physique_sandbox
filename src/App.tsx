@@ -7,6 +7,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import type { EndpointId } from "@/types/endpoints";
 import { ENDPOINT_LIST } from "@/types/endpoints";
+import { cn } from "@/lib/utils";
 import {
   getBaseUrl,
   getUseTokenForAll,
@@ -132,6 +133,7 @@ export default function App() {
   const [payEtablissement, setPayEtablissement] = useState("");
   const [payMatricule, setPayMatricule] = useState("");
   const [payResult, setPayResult] = useState<object | string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleToken = async () => {
     setTokenResult(null);
@@ -357,33 +359,52 @@ export default function App() {
 
   return (
     <div className="flex h-svh flex-col bg-background">
-      <Navbar />
+      <Navbar onToggleSidebar={() => setIsSidebarOpen((open) => !open)} />
       <div className="flex min-h-0 flex-1">
-      <Sidebar
-        onLogout={handleLogout}
-        baseUrl={baseUrlInput}
-        onBaseUrlChange={setBaseUrlInput}
-        onBaseUrlBlur={handleBaseUrlBlur}
-        adminUsername={adminUsernameInput}
-        onAdminUsernameChange={setAdminUsernameInput}
-        onAdminUsernameBlur={handleAdminUsernameBlur}
-        adminPassword={adminPasswordInput}
-        onAdminPasswordChange={setAdminPasswordInput}
-        onAdminPasswordBlur={handleAdminPasswordBlur}
-        useTokenForAll={useTokenForAll}
-        onUseTokenForAllChange={handleUseTokenForAllChange}
-        onGenerateToken={handleToken}
-        hasToken={!!getAdminToken()}
-        tokenLoading={tokenLoading}
-        selectedEndpoint={selectedEndpoint}
-        onSelectEndpoint={setSelectedEndpoint}
-        getPathForEndpoint={getPathForEndpoint}
-        onSaveEndpointPath={(id, path) => {
-          setEndpointPathOverride(id, path);
-          setEndpointPathsVersion((v) => v + 1);
-        }}
-      />
-      <main className="flex-1 overflow-y-auto bg-background p-6">
+        {/* Mobile overlay for sidebar */}
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/40 transition-opacity md:hidden",
+            isSidebarOpen ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"
+          )}
+          onClick={() => setIsSidebarOpen(false)}
+        />
+        {/* Sidebar container: slide-in on mobile, static on desktop */}
+        <div
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 w-72 transform bg-sidebar text-sidebar-foreground shadow-lg transition-transform md:static md:z-0 md:translate-x-0 md:shadow-none",
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          )}
+        >
+          <Sidebar
+            onLogout={handleLogout}
+            baseUrl={baseUrlInput}
+            onBaseUrlChange={setBaseUrlInput}
+            onBaseUrlBlur={handleBaseUrlBlur}
+            adminUsername={adminUsernameInput}
+            onAdminUsernameChange={setAdminUsernameInput}
+            onAdminUsernameBlur={handleAdminUsernameBlur}
+            adminPassword={adminPasswordInput}
+            onAdminPasswordChange={setAdminPasswordInput}
+            onAdminPasswordBlur={handleAdminPasswordBlur}
+            useTokenForAll={useTokenForAll}
+            onUseTokenForAllChange={handleUseTokenForAllChange}
+            onGenerateToken={handleToken}
+            hasToken={!!getAdminToken()}
+            tokenLoading={tokenLoading}
+            selectedEndpoint={selectedEndpoint}
+            onSelectEndpoint={(id) => {
+              setSelectedEndpoint(id);
+              setIsSidebarOpen(false);
+            }}
+            getPathForEndpoint={getPathForEndpoint}
+            onSaveEndpointPath={(id, path) => {
+              setEndpointPathOverride(id, path);
+              setEndpointPathsVersion((v) => v + 1);
+            }}
+          />
+        </div>
+      <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">
         <div className="mx-auto max-w-2xl">
           {selectedEndpoint === "token" && (
             <TokenView

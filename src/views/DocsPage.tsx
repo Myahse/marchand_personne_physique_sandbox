@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Menu } from "lucide-react";
 import logo from "@/assets/photo_2026-02-17_16-00-19_photo_x2_2560x2560_2pass_moreDetail-Photoroom.png";
 import { buildToc } from "@/lib/slugify";
+import { cn } from "@/lib/utils";
 
 const DOC_URL = "/docs/API_PEYA_PAY.md";
 
@@ -13,6 +14,7 @@ export function DocsPage() {
   const [md, setMd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isTocOpen, setIsTocOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -34,6 +36,14 @@ export function DocsPage() {
       {/* Top bar — same style as GeniusPay docs */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-4">
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsTocOpen((open) => !open)}
+            className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+            aria-label="Ouvrir le sommaire"
+          >
+            <Menu className="size-5" />
+          </button>
           <img
             src={logo}
             alt="PEYA PAY"
@@ -53,8 +63,22 @@ export function DocsPage() {
       </header>
 
       <div className="flex min-h-0 flex-1">
+        {/* Mobile overlay for table of contents */}
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/40 transition-opacity md:hidden",
+            isTocOpen ? "opacity-100 pointer-events-auto" : "pointer-events-none opacity-0"
+          )}
+          onClick={() => setIsTocOpen(false)}
+        />
         {/* Left sidebar — table of contents */}
-        <aside className="flex w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-muted/20 py-6 pl-6 pr-4">
+        <aside
+          className={cn(
+            "flex w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-background py-6 pl-6 pr-4 transition-transform md:static md:z-0 md:translate-x-0",
+            "fixed inset-y-0 left-0 z-50 shadow-lg md:relative md:shadow-none",
+            isTocOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          )}
+        >
           <nav className="sticky top-6 min-h-0 space-y-0.5">
             <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Sommaire
