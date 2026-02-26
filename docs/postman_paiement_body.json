@@ -1,0 +1,43 @@
+{
+  "data": {
+    "compteDebit": "0777146737",
+    "typeCompteDebit": "P",
+    "compteCredit": "0103244851",
+    "montant": 1000,
+    "login": "VOTRE_LOGIN_ADMIN",
+    "codeBanque": "DPAY",
+    "codeAgence": "11111",
+    "infos": [
+      {
+        "nom": "nom_etablissement",
+        "label": "Nom Etablissement",
+        "type": "select",
+        "ordre": 1,
+        "obligatoire": true,
+        "montantMin": null,
+        "valeur": "Ecole 1",
+        "typeselection": ["Ecole 1", "Ecole 2", "Ecole 3"]
+      },
+      {
+        "nom": "num_matricule",
+        "label": "Numéro Matricule",
+        "type": "String",
+        "ordre": 2,
+        "obligatoire": true,
+        "montantMin": null,
+        "valeur": "2024-12345",
+        "typeselection": null
+      },
+      {
+        "nom": "montant",
+        "label": "Montant",
+        "type": "Number",
+        "ordre": 3,
+        "obligatoire": true,
+        "montantMin": null,
+        "valeur": 1000,
+        "typeselection": null
+      }
+    ]
+  }
+}
