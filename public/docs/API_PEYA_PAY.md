@@ -338,7 +338,6 @@ Chaque élément du tableau peut contenir : `nom`, `label`, `type`, `ordre`, `ob
 | POST | `/wClients/code-partenaire` | Envoi code OTP partenaire |
 | POST | `/wClients/verifcode-partenaire` | Validation code OTP partenaire |
 | POST | `/paiement-partenaire/create` | Création paiement partenaire |
-| POST | `/wClients/transfertClient` | Transfert client |
 
 ---
 
