@@ -163,18 +163,8 @@ export default function App() {
       return;
     }
     try {
-      const encModel = await encryptString("Sandbox-Web");
-      const encImei = await encryptString("sandbox-imei");
-      const encPlatform = await encryptString("Web");
-      if (!encModel || !encImei || !encPlatform) {
-        setCodeResult("Échec chiffrement.");
-        return;
-      }
       const { data } = await post(getPathForEndpoint("otp-send"), {
         gsmPrincipale: phone,
-        modele: encModel,
-        imei: encImei,
-        plateform: encPlatform,
       });
       setCodeResult(data as object);
     } catch (e) {
@@ -190,13 +180,8 @@ export default function App() {
       return;
     }
     try {
-      const encCode = await encryptString(verifCode.trim());
-      if (!encCode) {
-        setVerifResult("Échec chiffrement.");
-        return;
-      }
       const { data } = await post(getPathForEndpoint("otp-verify"), {
-        codeValid: encCode,
+        codeValid: verifCode.trim(),
         login: phone,
       });
       setVerifResult(data as object);

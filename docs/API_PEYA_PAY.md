@@ -250,9 +250,9 @@ L’API est de type RESTful et utilise la méthode **POST**.
 | Paramètre     | Format | Description                                      | Obligatoire |
 |---------------|--------|--------------------------------------------------|-------------|
 | gsmPrincipale | String | Le numéro de téléphone du client (10 chiffres)   | O           |
-| modele        | String | Le modèle de téléphone du client (ex : SM-G…)    | O           |
-| imei          | String | IMEI de l’appareil (ex : SM-G…)                  | O           |
-| plateform     | String | Système d’exploitation (ex : ios, android)        | O           |
+
+> **Note (sandbox web)** : dans cette interface web de test, seul `gsmPrincipale` est réellement utilisé.
+> Les autres champs (modèle, IMEI, plateforme) concernent principalement les intégrations mobiles et peuvent être ignorés côté navigateur.
 
 ### Body
 
@@ -335,13 +335,8 @@ Chaque élément du tableau peut contenir : `nom`, `label`, `type`, `ordre`, `ob
 |---------|----------|-------------|
 | POST | `/authclient/token` | Génération du token |
 | POST | `/wClients/recherchePayeur` | Recherche client (recherche payeur) |
-| POST | `/wClients/rechercheclient` | Recherche client (variante sandbox) |
-| POST | `/wClients/code` | Envoi code OTP |
 | POST | `/wClients/code-partenaire` | Envoi code OTP partenaire |
-| POST | `/wClients/verifcode` | Validation code OTP |
 | POST | `/wClients/verifcode-partenaire` | Validation code OTP partenaire |
-| POST | `/wClients/solde` | Consultation solde |
-| POST | `/paiement/create` | Création paiement (sandbox) |
 | POST | `/paiement-partenaire/create` | Création paiement partenaire |
 | POST | `/wClients/transfertClient` | Transfert client |
 
