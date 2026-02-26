@@ -53,7 +53,7 @@ export default function App() {
     getAdminPassword()
   );
   const [useTokenForAll, setUseTokenForAllState] = useState(getUseTokenForAll);
-  const [endpointPathsVersion, setEndpointPathsVersion] = useState(0);
+  const [, setEndpointPathsVersion] = useState(0);
 
   useEffect(() => {
     setBaseUrlInput(getBaseUrl());
