@@ -53,7 +53,7 @@ export function OtpVerifyView({
               onChange={(e) => setPhone(e.target.value)}
             />
           </div>
-          <Button onClick={onVerify}>Vérifier le code</Button>
+          <Button onClick={onVerify}>Vérifier le code OTP</Button>
         </div>
         <ResultBlock value={result} />
       </CardContent>
