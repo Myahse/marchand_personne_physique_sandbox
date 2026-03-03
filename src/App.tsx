@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { goeyToast } from "goey-toast";
-import { generateAdminToken, getAdminToken, setAdminToken, post, getCompteActiviteFromToken } from "./api/client";
-import { encryptString } from "./api/crypto";
+import { generateAdminToken, getAdminToken, setAdminToken, post, postRaw, getCompteActiviteFromToken } from "./api/client";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import type { EndpointId } from "@/types/endpoints";
@@ -26,6 +25,7 @@ import { OtpSendView } from "@/views/OtpSendView";
 import { OtpVerifyView } from "@/views/OtpVerifyView";
 import { SearchPayeurView } from "@/views/SearchPayeurView";
 import { PaymentView } from "@/views/PaymentView";
+import { MouvementCompteView } from "@/views/MouvementCompteView";
 import { LoginView } from "@/views/LoginView";
 import { DocsPage } from "@/views/DocsPage";
 
@@ -133,6 +133,10 @@ export default function App() {
   const [payEtablissement, setPayEtablissement] = useState("");
   const [payMatricule, setPayMatricule] = useState("");
   const [payResult, setPayResult] = useState<object | string | null>(null);
+  const [mvtCompte, setMvtCompte] = useState("");
+  const [mvtDateStart, setMvtDateStart] = useState("");
+  const [mvtDateEnd, setMvtDateEnd] = useState("");
+  const [mvtResult, setMvtResult] = useState<object | string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleToken = async () => {
@@ -341,6 +345,44 @@ export default function App() {
     }
   };
 
+  const handleMouvementCompte = async () => {
+    setMvtResult(null);
+    const compte = mvtCompte.trim();
+    if (!compte) {
+      setMvtResult("Numéro de compte requis.");
+      return;
+    }
+    if (!mvtDateStart || !mvtDateEnd) {
+      setMvtResult("Dates de début et de fin requises.");
+      return;
+    }
+
+    const toDdMmYyyy = (value: string): string => {
+      if (!value.includes("-")) return value;
+      const [y, m, d] = value.split("-");
+      if (!y || !m || !d) return value;
+      return `${d}/${m}/${y}`;
+    };
+
+    try {
+      const { data } = await postRaw(getPathForEndpoint("mouvement-compte"), {
+        index: 1,
+        size: 20,
+        data: {
+          numerocomptecomplet: compte,
+          dateOperationParam: {
+            operator: "[]",
+            start: toDdMmYyyy(mvtDateStart),
+            end: toDdMmYyyy(mvtDateEnd),
+          },
+        },
+      });
+      setMvtResult(data as object);
+    } catch (e) {
+      setMvtResult({ error: String(e) });
+    }
+  };
+
   if (location.pathname === "/docs" || location.pathname === "/") {
     return <DocsPage />;
   }
@@ -461,6 +503,18 @@ export default function App() {
               setMatricule={setPayMatricule}
               result={payResult}
               onSubmit={handlePaiement}
+            />
+          )}
+          {selectedEndpoint === "mouvement-compte" && (
+            <MouvementCompteView
+              compte={mvtCompte}
+              setCompte={setMvtCompte}
+              dateStart={mvtDateStart}
+              setDateStart={setMvtDateStart}
+              dateEnd={mvtDateEnd}
+              setDateEnd={setMvtDateEnd}
+              result={mvtResult}
+              onSubmit={handleMouvementCompte}
             />
           )}
         </div>
