@@ -51,7 +51,8 @@ L'authentification s'effectue via un jeton JWT qui doit être inclus dans l'en-t
 
 ### 3. Méthodes API
 
-L'API est de type RESTful et utilise la méthode **POST**.
+L'API est de type RESTful et utilise principalement la méthode **POST**.
+Certains endpoints peuvent également être exposés en **GET** selon l'instance.
 
 - **URL test :** `https://test1-pey-peya.djogana-pay.com`
 - **URL prod :** Transmise après validation de l'intégration par la DGI.
@@ -329,6 +330,56 @@ Chaque élément du tableau peut contenir : `nom`, `label`, `type`, `ordre`, `ob
 
 ---
 
+## API #7 : Mouvements de compte (MVM comptes)
+
+Permet de consulter les mouvements d'un compte sur une période (avec pagination).
+
+| Propriété | Valeur |
+|------------|--------|
+| **Méthode** | POST |
+| **Endpoint** | `$url/vMvtopMvtc/mvtsComptes-partenaire` |
+
+### Paramètres (GET)
+
+| Paramètre | Format | Description | Obligatoire |
+|----------|--------|-------------|-------------|
+| index | Integer | Page (commence à 1) | O |
+| size | Integer | Taille de page | O |
+| numerocomptecomplet | String | Numéro de compte complet | O |
+| operator | String | Opérateur d'intervalle : `[]` | O |
+| start | String | Date début au format `DD/MM/YYYY` | O |
+| end | String | Date fin au format `DD/MM/YYYY` | O |
+
+
+### Body (POST)
+
+
+```json
+{
+  "index": 1,
+  "size": 20,
+  "data": {
+    "numerocomptecomplet": "0103244851",
+    "dateOperationParam": {
+      "operator": "[]",
+      "start": "01/01/2026",
+      "end": "31/01/2026"
+    }
+  }
+}
+```
+
+### Réponse (structure)
+
+La réponse est au format JSON et peut contenir :
+
+- `hasError` : boolean
+- `status` : objet avec `code` et `message`
+- `count` : nombre total d'éléments
+- `items` : liste des mouvements (structure selon l'instance)
+
+---
+
 ## Référence rapide des endpoints (sandbox)
 
 | Méthode | Endpoint | Description |
@@ -338,6 +389,7 @@ Chaque élément du tableau peut contenir : `nom`, `label`, `type`, `ordre`, `ob
 | POST | `/wClients/code-partenaire` | Envoi code OTP partenaire |
 | POST | `/wClients/verifcode-partenaire` | Validation code OTP partenaire |
 | POST | `/paiement-partenaire/create` | Création paiement partenaire |
+| POST | `/vMvtopMvtc/mvtsComptes-partenaire` | Mouvements de compte  |
 
 ---
 

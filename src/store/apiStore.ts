@@ -20,7 +20,8 @@ let useTokenForAll = true;
 
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://test1-pey-peya.djogana-pay.com";
+  // "https://test1-pey-peya.djogana-pay.com";
+  "https://peya.djogana-pay.com:7443"
 const defaultAdminUsername = import.meta.env.VITE_APP_ADMIN_USERNAME ?? "";
 const defaultAdminPassword = import.meta.env.VITE_APP_ADMIN_PASSWORD ?? "";
 
