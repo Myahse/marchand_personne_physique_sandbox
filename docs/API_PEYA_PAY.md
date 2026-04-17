@@ -384,6 +384,50 @@ La réponse est au format JSON et peut contenir :
 
 ---
 
+## API #8 : Virement fournisseur (paiement fournisseur)
+
+Permet d’effectuer un paiement vers un compte fournisseur (virement).
+
+| Propriété | Valeur |
+|------------|--------|
+| **Méthode** | POST |
+| **Endpoint** | `$url/wVirement/create` |
+| **URL test (complète)** | `https://test1-pey-peya.djogana-pay.com/wVirement/create` |
+
+### Paramètres
+
+| Paramètre | Format | Description | Obligatoire |
+|----------|--------|-------------|-------------|
+| compteDebit | String | Compte à débiter (client) | O |
+| compteCredit | String | Compte à créditer (fournisseur) | O |
+| login | String | Login / identifiant initiateur | O |
+| montant | String / Integer | Montant du virement | O |
+| motif | String | Motif / libellé (ex : `test`) | N |
+
+### Body (exemple)
+
+```json
+{
+  "data": {
+    "compteDebit": "0748513076",
+    "compteCredit": "DPAY111118547161738802108426852",
+    "login": "0748513076",
+    "montant": "1000",
+    "motif": "test"
+  }
+}
+```
+
+### Réponse (structure)
+
+La réponse est au format JSON et peut contenir :
+
+- `hasError` : boolean
+- `status` : objet avec `code` et `message`
+- `item` / `data` : détails de l’opération (selon l’instance)
+
+---
+
 ## Référence rapide des endpoints (sandbox)
 
 | Méthode | Endpoint | Description |
@@ -394,6 +438,7 @@ La réponse est au format JSON et peut contenir :
 | POST | `/wClients/verifcode-partenaire` | Validation code OTP partenaire |
 | POST | `/paiement-partenaire/create` | Création paiement partenaire |
 | POST | `/vMvtopMvtc/mvtsComptes-partenaire` | Mouvements de compte *(MVM comptes)* |
+| POST | `/wVirement/create` | Virement fournisseur *(paiement fournisseur)* |
 
 ---
 

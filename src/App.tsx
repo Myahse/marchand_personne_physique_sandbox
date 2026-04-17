@@ -26,6 +26,7 @@ import { OtpVerifyView } from "@/views/OtpVerifyView";
 import { SearchPayeurView } from "@/views/SearchPayeurView";
 import { PaymentView } from "@/views/PaymentView";
 import { MouvementCompteView } from "@/views/MouvementCompteView";
+import { VirementFournisseurView } from "@/views/VirementFournisseurView";
 import { LoginView } from "@/views/LoginView";
 import { DocsPage } from "@/views/DocsPage";
 
@@ -133,6 +134,12 @@ export default function App() {
   const [payEtablissement, setPayEtablissement] = useState("");
   const [payMatricule, setPayMatricule] = useState("");
   const [payResult, setPayResult] = useState<object | string | null>(null);
+  const [virCompteDebit, setVirCompteDebit] = useState("");
+  const [virCompteCredit, setVirCompteCredit] = useState("");
+  const [virLogin, setVirLogin] = useState("");
+  const [virMontant, setVirMontant] = useState("");
+  const [virMotif, setVirMotif] = useState("");
+  const [virResult, setVirResult] = useState<object | string | null>(null);
   const [mvtCompte, setMvtCompte] = useState("");
   const [mvtDateStart, setMvtDateStart] = useState("");
   const [mvtDateEnd, setMvtDateEnd] = useState("");
@@ -345,6 +352,40 @@ export default function App() {
     }
   };
 
+  const handleVirementFournisseur = async () => {
+    setVirResult(null);
+    const compteDebit = virCompteDebit.trim();
+    const compteCredit = virCompteCredit.trim();
+    const login = virLogin.trim();
+    const montantStr = virMontant.trim();
+
+    if (!compteDebit || !compteCredit || !login || !montantStr) {
+      setVirResult("Compte débit, compte crédit, login et montant requis.");
+      return;
+    }
+    const montantNum = parseFloat(montantStr);
+    if (isNaN(montantNum) || montantNum <= 0) {
+      setVirResult("Montant invalide.");
+      return;
+    }
+    const montantInt = Math.round(montantNum);
+    try {
+      const payload: Record<string, unknown> = {
+        compteDebit,
+        compteCredit,
+        login,
+        montant: montantInt,
+      };
+      const motif = virMotif.trim();
+      if (motif) payload.motif = motif;
+
+      const { data } = await post(getPathForEndpoint("virement-fournisseur"), payload);
+      setVirResult(data as object);
+    } catch (e) {
+      setVirResult({ error: String(e) });
+    }
+  };
+
   const handleMouvementCompte = async () => {
     setMvtResult(null);
     const compte = mvtCompte.trim();
@@ -503,6 +544,22 @@ export default function App() {
               setMatricule={setPayMatricule}
               result={payResult}
               onSubmit={handlePaiement}
+            />
+          )}
+          {selectedEndpoint === "virement-fournisseur" && (
+            <VirementFournisseurView
+              compteDebit={virCompteDebit}
+              setCompteDebit={setVirCompteDebit}
+              compteCredit={virCompteCredit}
+              setCompteCredit={setVirCompteCredit}
+              login={virLogin}
+              setLogin={setVirLogin}
+              montant={virMontant}
+              setMontant={setVirMontant}
+              motif={virMotif}
+              setMotif={setVirMotif}
+              result={virResult}
+              onSubmit={handleVirementFournisseur}
             />
           )}
           {selectedEndpoint === "mouvement-compte" && (

@@ -4,6 +4,7 @@ export type EndpointId =
   | "otp-verify"
   | "search-client-by-phone"
   | "payment"
+  | "virement-fournisseur"
   | "mouvement-compte";
 
 export type HttpMethod = "GET" | "POST";
@@ -19,6 +20,12 @@ export const ENDPOINT_LIST: {
   { id: "otp-verify", label: "Vérif. code OTP", method: "POST", path: "/wClients/verifcode-partenaire" },
   { id: "search-client-by-phone", label: "Recherche payeur", method: "POST", path: "/wClients/recherchePayeur" },
   { id: "payment", label: "Paiement", method: "POST", path: "/paiement-partenaire/create" },
+  {
+    id: "virement-fournisseur",
+    label: "Virement fournisseur",
+    method: "POST",
+    path: "/wVirement/create",
+  },
   {
     id: "mouvement-compte",
     label: "Mouvement de compte",
