@@ -56,11 +56,10 @@ const useDataLoader = () => {
   return { data, loading, error, loadData, setData };
 };
 
-const maskPhoneNumber = (phone?: string) => {
-  if (!phone) return "";
-  const phoneStr = String(phone).trim();
-  if (phoneStr.length <= 2) return phoneStr;
-  return `xxxx${phoneStr.slice(-2)}`;
+const formatLatLng = (lat?: number, lng?: number) => {
+  const latText = typeof lat === "number" && Number.isFinite(lat) ? lat.toFixed(6) : "—";
+  const lngText = typeof lng === "number" && Number.isFinite(lng) ? lng.toFixed(6) : "—";
+  return { latText, lngText };
 };
 
 
@@ -417,9 +416,6 @@ export function AgentPage() {
       .filter((a) => a.latitude && a.longitude)
       .map((a, index) => ({
         id: a.codeAgence || a.login || a.telephone || `agent-${index}`,
-        name: a.nomUtilisateur || a.nom || "Point de vente",
-        address: a.adresse,
-        telephone: a.telephone,
         lat: parseFloat(a.latitude),
         lng: parseFloat(a.longitude),
         ...a,
@@ -609,13 +605,15 @@ export function AgentPage() {
               >
                 <Popup>
                   <div className="text-xs">
-                    <div className="font-semibold">{agent.name}</div>
-                    {agent.address && <div className="text-gray-600">{agent.address}</div>}
-                    {agent.telephone && (
-                      <div className="mt-1 text-[#007F68] font-medium">
-                        {maskPhoneNumber(agent.telephone)}
-                      </div>
-                    )}
+                    {(() => {
+                      const { latText, lngText } = formatLatLng(agent.lat, agent.lng);
+                      return (
+                        <>
+                          <div className="font-semibold">Latitude: {latText}</div>
+                          <div className="text-gray-700">Longitude: {lngText}</div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </Popup>
               </Marker>
@@ -712,6 +710,7 @@ export function AgentPage() {
                       lat: parseFloat(agent.latitude || agent.lat),
                       lng: parseFloat(agent.longitude || agent.lng),
                     };
+                    const { latText, lngText } = formatLatLng(agentForMap.lat, agentForMap.lng);
                     return (
                       <div
                         key={`agent-${agentId}-${index}`}
@@ -736,17 +735,12 @@ export function AgentPage() {
                           // keep hoveredAgent until next hover (prevents bounds reset jitter)
                         }}
                       >
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {agent.nomUtilisateur || agent.nom || agent.name || "Point de vente"}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                          {agent.adresse || agent.address}
-                        </p>
-                        {agent.telephone && (
-                          <p className="text-[#007F68] font-medium text-sm">
-                            {maskPhoneNumber(agent.telephone)}
-                          </p>
-                        )}
+                        <div className="text-sm text-gray-900 font-semibold">
+                          Latitude: <span className="font-mono">{latText}</span>
+                        </div>
+                        <div className="mt-1 text-sm text-gray-700">
+                          Longitude: <span className="font-mono">{lngText}</span>
+                        </div>
                       </div>
                     );
                   })}
@@ -779,19 +773,17 @@ export function AgentPage() {
                 <div className="grid grid-cols-1 gap-4">
                   {agents.map((agent, index) => {
                     const agentId = agent.codeAgence || agent.login || agent.telephone || `agent-${index}`;
+                    const lat = parseFloat(agent.latitude || agent.lat);
+                    const lng = parseFloat(agent.longitude || agent.lng);
+                    const { latText, lngText } = formatLatLng(lat, lng);
                     return (
                       <div key={`agent-${agentId}-${index}`} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {agent.nomUtilisateur || agent.nom || agent.name || "Point de vente"}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                          {agent.adresse || agent.address}
-                        </p>
-                        {agent.telephone && (
-                          <p className="text-[#007F68] font-medium text-sm">
-                            {maskPhoneNumber(agent.telephone)}
-                          </p>
-                        )}
+                        <div className="text-sm text-gray-900 font-semibold">
+                          Latitude: <span className="font-mono">{latText}</span>
+                        </div>
+                        <div className="mt-1 text-sm text-gray-700">
+                          Longitude: <span className="font-mono">{lngText}</span>
+                        </div>
                       </div>
                     );
                   })}
