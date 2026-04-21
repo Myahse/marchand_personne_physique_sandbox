@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import logo from "@/assets/photo_2026-02-17_16-00-19_photo_x2_2560x2560_2pass_moreDetail-Photoroom.png";
-import { FileText, Menu } from "lucide-react";
+import { FileText, Menu, UsersRound } from "lucide-react";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -27,13 +27,22 @@ export function Navbar({ onToggleSidebar }: NavbarProps) {
           Sandbox Partenaires
         </span>
       </div>
-      <Link
-        to="/docs"
-        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      >
-        <FileText className="size-4" />
-        <span className="hidden sm:inline">Documentation API</span>
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link
+          to="/agent"
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <UsersRound className="size-4" />
+          <span className="hidden sm:inline">Agents</span>
+        </Link>
+        <Link
+          to="/docs"
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <FileText className="size-4" />
+          <span className="hidden sm:inline">Documentation API</span>
+        </Link>
+      </div>
     </header>
   );
 }

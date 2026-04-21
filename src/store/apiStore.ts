@@ -6,6 +6,7 @@ import type { EndpointId } from "@/types/endpoints";
  */
 
 const BASE_URL_KEY = "peya-sandbox-base-url";
+const BASE_URL_USER_SET_KEY = "peya-sandbox-base-url-user-set";
 const ADMIN_USERNAME_KEY = "peya-sandbox-admin-username";
 const ADMIN_PASSWORD_KEY = "peya-sandbox-admin-password";
 const ENDPOINT_PATHS_KEY = "peya-sandbox-endpoint-paths";
@@ -21,17 +22,22 @@ let useTokenForAll = true;
 const defaultBaseUrl =
   import.meta.env.VITE_API_BASE_URL ||
   // "https://test1-pey-peya.djogana-pay.com";
-  "https://peya.djogana-pay.com:7443"
-const defaultAdminUsername = import.meta.env.VITE_APP_ADMIN_USERNAME ?? "";
-const defaultAdminPassword = import.meta.env.VITE_APP_ADMIN_PASSWORD ?? "";
+  "https://peya.djogana-pay.com:7443";
+
+// Prefer sandbox env var names, but support the website naming too.
+const defaultAdminUsername =
+  import.meta.env.VITE_APP_ADMIN_USERNAME ?? import.meta.env.VITE_AUTH_USERNAME ?? "";
+const defaultAdminPassword =
+  import.meta.env.VITE_APP_ADMIN_PASSWORD ?? import.meta.env.VITE_AUTH_PASSWORD ?? "";
 
 export function getBaseUrl(): string {
   if (typeof baseUrlOverride === "string" && baseUrlOverride.trim() !== "") {
     return baseUrlOverride.trim().replace(/\/$/, "");
   }
   try {
+    const userSet = localStorage.getItem(BASE_URL_USER_SET_KEY) === "true";
     const stored = localStorage.getItem(BASE_URL_KEY);
-    if (stored && stored.trim() !== "") return stored.trim().replace(/\/$/, "");
+    if (userSet && stored && stored.trim() !== "") return stored.trim().replace(/\/$/, "");
   } catch {
     /* ignore */
   }
@@ -43,6 +49,7 @@ export function setBaseUrl(url: string): void {
   baseUrlOverride = trimmed;
   try {
     localStorage.setItem(BASE_URL_KEY, trimmed);
+    localStorage.setItem(BASE_URL_USER_SET_KEY, "true");
   } catch {
     /* ignore */
   }
@@ -52,7 +59,7 @@ export function getAdminUsername(): string {
   if (typeof adminUsernameOverride === "string") return adminUsernameOverride;
   try {
     const stored = localStorage.getItem(ADMIN_USERNAME_KEY);
-    if (stored !== null) return stored;
+    if (stored !== null && stored.trim() !== "") return stored;
   } catch {
     /* ignore */
   }
@@ -72,7 +79,7 @@ export function getAdminPassword(): string {
   if (typeof adminPasswordOverride === "string") return adminPasswordOverride;
   try {
     const stored = localStorage.getItem(ADMIN_PASSWORD_KEY);
-    if (stored !== null) return stored;
+    if (stored !== null && stored.trim() !== "") return stored;
   } catch {
     /* ignore */
   }

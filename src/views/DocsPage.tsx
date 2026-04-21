@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
-import { ArrowLeft, Loader2, Menu } from "lucide-react";
+import { ArrowLeft, Loader2, Menu, UsersRound } from "lucide-react";
 import logo from "@/assets/photo_2026-02-17_16-00-19_photo_x2_2560x2560_2pass_moreDetail-Photoroom.png";
 import { buildToc } from "@/lib/slugify";
 import { cn } from "@/lib/utils";
@@ -53,13 +53,22 @@ export function DocsPage() {
             Documentation API — PEYA PAY
           </span>
         </div>
-        <Link
-          to="/login"
-          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Sandbox
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/agent"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <UsersRound className="size-4" />
+            <span className="hidden sm:inline">Agents</span>
+          </Link>
+          <Link
+            to="/login"
+            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            Sandbox
+          </Link>
+        </div>
       </header>
 
       <div className="flex min-h-0 flex-1">
@@ -74,16 +83,16 @@ export function DocsPage() {
         {/* Left sidebar — table of contents */}
         <aside
           className={cn(
-            "flex w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-background py-6 pl-6 pr-4 transition-transform md:static md:z-0 md:translate-x-0",
+            "flex w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-background py-6 pl-6 pr-4 transition-transform md:static md:z-0 md:translate-x-0",
             "fixed inset-y-0 left-0 z-50 shadow-lg md:relative md:shadow-none",
             isTocOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           )}
         >
-          <nav className="sticky top-6 min-h-0 space-y-0.5">
+          <nav className="flex min-h-0 flex-1 flex-col">
             <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Sommaire
             </p>
-            <ul className="space-y-0.5">
+            <ul className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1">
               {toc.map(({ level, title, id }) => (
                 <li key={id}>
                   <a

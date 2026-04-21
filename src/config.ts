@@ -9,7 +9,9 @@ export const config = {
   /** API de chiffrement/déchiffrement (NCG) — même que marchand_dart */
   cryptoBaseUrl: 'https://djoganapayci.com/api10/peya-2.0/ncg',
   /** Credentials admin pour /authclient/token (à mettre dans .env) */
-  appAdminUsername: import.meta.env.VITE_APP_ADMIN_USERNAME || '',
-  appAdminPassword: import.meta.env.VITE_APP_ADMIN_PASSWORD || '',
+  appAdminUsername:
+    import.meta.env.VITE_APP_ADMIN_USERNAME || import.meta.env.VITE_AUTH_USERNAME || "",
+  appAdminPassword:
+    import.meta.env.VITE_APP_ADMIN_PASSWORD || import.meta.env.VITE_AUTH_PASSWORD || "",
   requestTimeoutMs: 30_000,
 } as const;

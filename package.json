@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-  "dev": "vite",
-  "build": "node node_modules/vite/bin/vite.js build",
-  "preview": "vite preview",
-  "typecheck": "tsc -b"
+    "dev": "vite",
+    "build": "node node_modules/vite/bin/vite.js build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
@@ -15,9 +15,11 @@
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.0",
     "goey-toast": "^0.2.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.575.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-leaflet": "^4.2.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.13.1",
     "rehype-slug": "^6.0.0",
@@ -26,6 +28,7 @@
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^22.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

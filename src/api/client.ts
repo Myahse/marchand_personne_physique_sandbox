@@ -44,34 +44,96 @@ export async function generateAdminToken(path?: string): Promise<string | null> 
   console.log("[PEYA] Token request:", { path: tokenPath, url: resolvedPath });
   const username = getAdminUsername();
   const password = getAdminPassword();
+  if (!username || !password) {
+    console.warn("[PEYA] Token request has empty credentials:", {
+      hasUsername: !!username,
+      hasPassword: !!password,
+    });
+  }
   const res = await fetch(resolvedPath, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ username, password }),
     signal: AbortSignal.timeout(config.requestTimeoutMs),
   });
-  const data = await safeParseJson(res);
+
+  const { parsed: data, text } = await readJsonWithText(res);
+  if (!res.ok) {
+    console.error("[PEYA] Token response not OK:", {
+      url: resolvedPath,
+      status: res.status,
+      statusText: res.statusText,
+      contentType: res.headers.get("content-type"),
+      preview: text.slice(0, 300),
+    });
+    throw new Error(`Token request failed (${res.status})`);
+  }
+  if (!data) {
+    console.error("[PEYA] Token response is not JSON:", {
+      url: resolvedPath,
+      status: res.status,
+      contentType: res.headers.get("content-type"),
+      preview: text.slice(0, 300),
+    });
+    throw new Error("Token response is not JSON");
+  }
   const item = (data as any)?.item ?? (data as any)?.data;
   if (item && typeof item === "object") tokenResponseItem = item as Record<string, unknown>;
-  const token =
-    (item as any)?.token ??
-    (item as any)?.access_token ??
-    (data as any)?.token ??
-    (data as any)?.access_token ??
-    (data as any)?.data?.token ??
-    null;
-  if (token) adminToken = token;
+
+  const token = extractToken(data);
+  if (!token) {
+    console.error("[PEYA] Token not found in response:", {
+      url: resolvedPath,
+      keys: Object.keys(data as any),
+      hasError: (data as any)?.hasError,
+      status: (data as any)?.status,
+      itemType: item === null ? "null" : typeof item,
+      itemKeys: item && typeof item === "object" ? Object.keys(item as any) : null,
+      preview: text.slice(0, 300),
+    });
+    throw new Error("No token found in token response");
+  }
+  adminToken = token;
   return token;
 }
 
-/** Parse response as JSON; return null if empty or invalid (avoids SyntaxError). */
-async function safeParseJson(res: Response): Promise<Record<string, unknown> | null> {
+function getNestedValue(obj: any, path: string): unknown {
+  return path.split(".").reduce((cur, key) => (cur ? cur[key] : undefined), obj);
+}
+
+function extractToken(result: any): string | null {
+  const TOKEN_FIELDS = [
+    "item.token",
+    "item.access_token",
+    "data.token",
+    "data.access_token",
+    "token",
+    "accessToken",
+    "access_token",
+    "data.data.token",
+    "item.data.token",
+  ];
+  for (const field of TOKEN_FIELDS) {
+    const v = getNestedValue(result, field);
+    if (typeof v === "string" && v.trim()) return v.trim();
+  }
+  return null;
+}
+
+/**
+ * Read response body and try parsing JSON.
+ * Returns both the parsed object (or null) and the raw text to help debugging
+ * HTML / non-JSON responses without crashing the app.
+ */
+async function readJsonWithText(
+  res: Response
+): Promise<{ parsed: Record<string, unknown> | null; text: string }> {
   const text = await res.text();
-  if (!text.trim()) return null;
+  if (!text.trim()) return { parsed: null, text: "" };
   try {
-    return JSON.parse(text) as Record<string, unknown>;
+    return { parsed: JSON.parse(text) as Record<string, unknown>, text };
   } catch {
-    return null;
+    return { parsed: null, text };
   }
 }
 
@@ -96,8 +158,16 @@ export async function post<T = unknown>(
     body: JSON.stringify({ data: payload }),
     signal: AbortSignal.timeout(config.requestTimeoutMs),
   });
-  const parsed = await safeParseJson(res);
-  const data = parsed ?? { status: res.status, ok: res.ok, message: res.statusText || (res.ok ? 'Réponse vide' : 'Erreur') };
+  const { parsed, text } = await readJsonWithText(res);
+  const data =
+    parsed ??
+    ({
+      status: res.status,
+      ok: res.ok,
+      message: res.statusText || (res.ok ? "Réponse vide" : "Erreur"),
+      contentType: res.headers.get("content-type"),
+      preview: text.slice(0, 300),
+    } as any);
   console.log("[PEYA] POST response:", { url, status: res.status });
   return { data: data as T, status: res.status };
 }
@@ -122,8 +192,16 @@ export async function postRaw<T = unknown>(
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(config.requestTimeoutMs),
   });
-  const parsed = await safeParseJson(res);
-  const data = parsed ?? { status: res.status, ok: res.ok, message: res.statusText || (res.ok ? 'Réponse vide' : 'Erreur') };
+  const { parsed, text } = await readJsonWithText(res);
+  const data =
+    parsed ??
+    ({
+      status: res.status,
+      ok: res.ok,
+      message: res.statusText || (res.ok ? "Réponse vide" : "Erreur"),
+      contentType: res.headers.get("content-type"),
+      preview: text.slice(0, 300),
+    } as any);
   console.log("[PEYA] POST (raw) response:", { url, status: res.status });
   return { data: data as T, status: res.status };
 }

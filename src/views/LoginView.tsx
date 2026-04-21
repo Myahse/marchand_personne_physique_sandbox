@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { goeyToast } from "goey-toast";
+import { Link } from "react-router-dom";
+import { UsersRound, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +67,22 @@ export function LoginView({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <Link
+              to="/agent"
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <UsersRound className="size-4" />
+              Agents
+            </Link>
+            <Link
+              to="/docs"
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <FileText className="size-4" />
+              Documentation
+            </Link>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="login-base-url">Base URL API</Label>

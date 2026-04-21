@@ -29,6 +29,7 @@ import { MouvementCompteView } from "@/views/MouvementCompteView";
 import { VirementFournisseurView } from "@/views/VirementFournisseurView";
 import { LoginView } from "@/views/LoginView";
 import { DocsPage } from "@/views/DocsPage";
+import { AgentPage } from "@/views/AgentPage";
 
 function normalizePhone(phone: string): string {
   let digits = phone.replace(/\D/g, "");
@@ -426,6 +427,10 @@ export default function App() {
 
   if (location.pathname === "/docs" || location.pathname === "/") {
     return <DocsPage />;
+  }
+
+  if (location.pathname === "/agent") {
+    return <AgentPage />;
   }
 
   if (!hasToken) {
