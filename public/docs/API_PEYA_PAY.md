@@ -438,8 +438,36 @@ La réponse est au format JSON et peut contenir :
 | POST | `/paiement-partenaire/create` | Création paiement partenaire |
 | POST | `/vMvtopMvtc/mvtsComptes-partenaire` | Mouvements de compte *(MVM comptes)* |
 | POST | `/wVirement/create` | Virement fournisseur *(paiement fournisseur)* |
+| POST | `/wUtilisateur/rechercheAllPdv` | Liste des points de vente (PDV) — Agents *(longitude/latitude)* |
 
 ---
+
+## API #9 : Recherche de tous les points de vente (PDV) — Agents
+
+Permet de récupérer la liste des points de vente (PDV) / agents.  
+**Authentification requise** : `Authorization: Bearer TOKEN`.
+
+| Propriété | Valeur |
+|------------|--------|
+| **Méthode** | POST |
+| **Endpoint** | `$url/wUtilisateur/rechercheAllPdv` |
+
+### Body (attendu)
+
+```json
+{
+  "data": {}
+}
+```
+
+### Réponse (structure)
+
+La réponse peut contenir selon l’instance :
+
+- `hasError` : boolean
+- `status` : objet avec `code` et `message`
+- `count` : nombre d’éléments
+- `items` ou `item` : données retournées *(selon l’instance backend)*
 
 **Documentation API PEYA PAY — Sandbox Partenaires**
 
