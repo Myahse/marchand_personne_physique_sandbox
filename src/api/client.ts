@@ -175,11 +175,12 @@ export async function post<T = unknown>(
 /** POST body brut (sans wrapper { data }) pour certains endpoints */
 export async function postRaw<T = unknown>(
   path: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  options?: { skipToken?: boolean; forceToken?: boolean }
 ): Promise<{ data: T; status: number }> {
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
-  const useToken = getUseTokenForAll();
+  const useToken = (options?.forceToken ?? getUseTokenForAll()) && !options?.skipToken;
   if (useToken && !adminToken) await generateAdminToken(getTokenPath());
   console.log("[PEYA] POST (raw):", { path, url, token: useToken && !!adminToken });
   const res = await fetch(url, {

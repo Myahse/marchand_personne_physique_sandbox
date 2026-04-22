@@ -257,6 +257,7 @@ const FILTER_CONFIG: Record<keyof FiltersState, FilterConfig> = {
 };
 
 function FilterSelect({
+  id,
   label,
   value,
   onChange,
@@ -267,6 +268,7 @@ function FilterSelect({
   getLabel,
   getKey,
 }: {
+  id: string;
   label: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -279,8 +281,12 @@ function FilterSelect({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>
       <select
+        id={id}
+        name={id}
         value={value}
         onChange={onChange}
         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007F68] focus:border-transparent bg-white"
@@ -298,6 +304,8 @@ function FilterSelect({
 }
 
 export function AgentPage() {
+  const SHOW_FILTERS = false;
+
   const [filters, setFilters] = useState<FiltersState>({
     department: "",
     city: "",
@@ -315,14 +323,18 @@ export function AgentPage() {
   const communesLoader = useDataLoader();
   const quartiersLoader = useDataLoader();
 
-  // Mobile filters drawer: open by default (like peyapay website)
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  // Filters drawer is optional; keep it closed when filters are disabled.
+  const [drawerOpen, setDrawerOpen] = useState(SHOW_FILTERS);
 
   // Do not auto-request geolocation on mount (avoids browser provider warnings).
   // Users can still trigger geolocation via the map control button.
 
   useEffect(() => {
-    departmentsLoader.loadData(() => getDepartments());
+    if (SHOW_FILTERS) {
+      departmentsLoader.loadData(() => getDepartments());
+    }
+    // Always load agents immediately (no filters required)
+    loadAgents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -361,11 +373,6 @@ export function AgentPage() {
   }, [filters.commune]);
 
   const loadAgents = useCallback(async () => {
-    if (!filters.commune) {
-      setAgents([]);
-      setGlobalLoading(false);
-      return;
-    }
     try {
       setGlobalLoading(true);
       setGlobalError(null);
@@ -392,7 +399,7 @@ export function AgentPage() {
   }, [filters.commune]);
 
   useEffect(() => {
-    if (filters.commune) {
+    if (SHOW_FILTERS && filters.commune) {
       loadAgents();
       setDrawerOpen(false);
     }
@@ -400,16 +407,16 @@ export function AgentPage() {
 
   const isLoading =
     globalLoading ||
-    departmentsLoader.loading ||
-    citiesLoader.loading ||
-    communesLoader.loading ||
-    quartiersLoader.loading;
+    (SHOW_FILTERS && departmentsLoader.loading) ||
+    (SHOW_FILTERS && citiesLoader.loading) ||
+    (SHOW_FILTERS && communesLoader.loading) ||
+    (SHOW_FILTERS && quartiersLoader.loading);
   const error =
     globalError ||
-    departmentsLoader.error ||
-    citiesLoader.error ||
-    communesLoader.error ||
-    quartiersLoader.error;
+    (SHOW_FILTERS && departmentsLoader.error) ||
+    (SHOW_FILTERS && citiesLoader.error) ||
+    (SHOW_FILTERS && communesLoader.error) ||
+    (SHOW_FILTERS && quartiersLoader.error);
 
   const agentsWithCoords = useMemo(() => {
     return (agents || [])
@@ -491,88 +498,96 @@ export function AgentPage() {
         </Link>
       </header>
 
-      {/* Filter drawer overlay (mobile + desktop) */}
-      <div
-        className={cn(
-          "fixed inset-0 z-[9998] bg-black/40 transition-opacity",
-          drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}
-        onClick={() => setDrawerOpen(false)}
-      />
-      <aside
-        className={cn(
-          "fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl transition-transform md:hidden",
-          drawerOpen ? "translate-x-0" : "translate-x-full"
-        )}
-      >
-        <div className="p-4 pt-6">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+      {SHOW_FILTERS && (
+        <>
+          {/* Filter drawer overlay (mobile + desktop) */}
+          <div
+            className={cn(
+              "fixed inset-0 z-[9998] bg-black/40 transition-opacity",
+              drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            )}
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside
+            className={cn(
+              "fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-xl transition-transform md:hidden",
+              drawerOpen ? "translate-x-0" : "translate-x-full"
+            )}
+          >
+            <div className="p-4 pt-6">
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-2">
+                <FilterSelect
+                  id="agents-filter-department"
+                  label={FILTER_CONFIG.department.label}
+                  value={filters.department}
+                  onChange={(e) => handleFilterChange("department", e.target.value)}
+                  options={departmentsLoader.data}
+                  disabled={isLoading}
+                  placeholder={FILTER_CONFIG.department.placeholder}
+                  getValue={FILTER_CONFIG.department.getValue}
+                  getLabel={FILTER_CONFIG.department.getLabel}
+                  getKey={FILTER_CONFIG.department.getKey}
+                />
+                <FilterSelect
+                  id="agents-filter-city"
+                  label={FILTER_CONFIG.city.label}
+                  value={filters.city}
+                  onChange={(e) => handleFilterChange("city", e.target.value)}
+                  options={citiesLoader.data}
+                  disabled={isLoading || !filters.department || citiesLoader.data.length === 0}
+                  placeholder={FILTER_CONFIG.city.placeholder}
+                  getValue={FILTER_CONFIG.city.getValue}
+                  getLabel={FILTER_CONFIG.city.getLabel}
+                  getKey={FILTER_CONFIG.city.getKey}
+                />
+                <FilterSelect
+                  id="agents-filter-commune"
+                  label={FILTER_CONFIG.commune.label}
+                  value={filters.commune}
+                  onChange={(e) => handleFilterChange("commune", e.target.value)}
+                  options={communesLoader.data}
+                  disabled={isLoading || !filters.city || communesLoader.data.length === 0}
+                  placeholder={FILTER_CONFIG.commune.placeholder}
+                  getValue={FILTER_CONFIG.commune.getValue}
+                  getLabel={FILTER_CONFIG.commune.getLabel}
+                  getKey={FILTER_CONFIG.commune.getKey}
+                />
+                <FilterSelect
+                  id="agents-filter-quartier"
+                  label={FILTER_CONFIG.quartier.label}
+                  value={filters.quartier}
+                  onChange={(e) => handleFilterChange("quartier", e.target.value)}
+                  options={quartiersLoader.data}
+                  disabled={isLoading || !filters.commune || quartiersLoader.data.length === 0}
+                  placeholder={FILTER_CONFIG.quartier.placeholder}
+                  getValue={FILTER_CONFIG.quartier.getValue}
+                  getLabel={FILTER_CONFIG.quartier.getLabel}
+                  getKey={FILTER_CONFIG.quartier.getKey}
+                />
+              </div>
+              <div className="mt-4 flex justify-end gap-3">
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="bg-white border-2 border-gray-300 text-gray-700 px-4 py-1 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 text-sm"
+                >
+                  Fermer
+                </button>
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="bg-[#007F68] border-2 border-[#31B4A6] text-white px-4 py-1 rounded-lg font-medium hover:bg-[#02A285] transition-colors duration-200 text-sm"
+                >
+                  Appliquer
+                </button>
+              </div>
             </div>
-          )}
-          <div className="grid grid-cols-1 gap-2">
-            <FilterSelect
-              label={FILTER_CONFIG.department.label}
-              value={filters.department}
-              onChange={(e) => handleFilterChange("department", e.target.value)}
-              options={departmentsLoader.data}
-              disabled={isLoading}
-              placeholder={FILTER_CONFIG.department.placeholder}
-              getValue={FILTER_CONFIG.department.getValue}
-              getLabel={FILTER_CONFIG.department.getLabel}
-              getKey={FILTER_CONFIG.department.getKey}
-            />
-            <FilterSelect
-              label={FILTER_CONFIG.city.label}
-              value={filters.city}
-              onChange={(e) => handleFilterChange("city", e.target.value)}
-              options={citiesLoader.data}
-              disabled={isLoading || !filters.department || citiesLoader.data.length === 0}
-              placeholder={FILTER_CONFIG.city.placeholder}
-              getValue={FILTER_CONFIG.city.getValue}
-              getLabel={FILTER_CONFIG.city.getLabel}
-              getKey={FILTER_CONFIG.city.getKey}
-            />
-            <FilterSelect
-              label={FILTER_CONFIG.commune.label}
-              value={filters.commune}
-              onChange={(e) => handleFilterChange("commune", e.target.value)}
-              options={communesLoader.data}
-              disabled={isLoading || !filters.city || communesLoader.data.length === 0}
-              placeholder={FILTER_CONFIG.commune.placeholder}
-              getValue={FILTER_CONFIG.commune.getValue}
-              getLabel={FILTER_CONFIG.commune.getLabel}
-              getKey={FILTER_CONFIG.commune.getKey}
-            />
-            <FilterSelect
-              label={FILTER_CONFIG.quartier.label}
-              value={filters.quartier}
-              onChange={(e) => handleFilterChange("quartier", e.target.value)}
-              options={quartiersLoader.data}
-              disabled={isLoading || !filters.commune || quartiersLoader.data.length === 0}
-              placeholder={FILTER_CONFIG.quartier.placeholder}
-              getValue={FILTER_CONFIG.quartier.getValue}
-              getLabel={FILTER_CONFIG.quartier.getLabel}
-              getKey={FILTER_CONFIG.quartier.getKey}
-            />
-          </div>
-          <div className="mt-4 flex justify-end gap-3">
-            <button
-              onClick={() => setDrawerOpen(false)}
-              className="bg-white border-2 border-gray-300 text-gray-700 px-4 py-1 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 text-sm"
-            >
-              Fermer
-            </button>
-            <button
-              onClick={() => setDrawerOpen(false)}
-              className="bg-[#007F68] border-2 border-[#31B4A6] text-white px-4 py-1 rounded-lg font-medium hover:bg-[#02A285] transition-colors duration-200 text-sm"
-            >
-              Appliquer
-            </button>
-          </div>
-        </div>
-      </aside>
+          </aside>
+        </>
+      )}
 
       <div className="relative w-full" style={{ height: "calc(100vh - 3.5rem)" }}>
         <div className="hidden md:block absolute inset-0">
@@ -621,7 +636,7 @@ export function AgentPage() {
           </MapContainer>
         </div>
 
-        {/* Right panel on desktop: filters + list (drawer behavior) */}
+        {/* Right panel on desktop: list drawer */}
         <div
           className={cn(
             "hidden md:flex fixed top-14 right-0 bottom-0 w-[450px] bg-white shadow-2xl z-[9999] flex-col transition-transform",
@@ -630,56 +645,15 @@ export function AgentPage() {
         >
           <div className="p-4 border-b border-gray-200">
             {error && (
-              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                 {error}
               </div>
             )}
-            <div className="grid grid-cols-1 gap-2">
-              <FilterSelect
-                label={FILTER_CONFIG.department.label}
-                value={filters.department}
-                onChange={(e) => handleFilterChange("department", e.target.value)}
-                options={departmentsLoader.data}
-                disabled={isLoading}
-                placeholder={FILTER_CONFIG.department.placeholder}
-                getValue={FILTER_CONFIG.department.getValue}
-                getLabel={FILTER_CONFIG.department.getLabel}
-                getKey={FILTER_CONFIG.department.getKey}
-              />
-              <FilterSelect
-                label={FILTER_CONFIG.city.label}
-                value={filters.city}
-                onChange={(e) => handleFilterChange("city", e.target.value)}
-                options={citiesLoader.data}
-                disabled={isLoading || !filters.department || citiesLoader.data.length === 0}
-                placeholder={FILTER_CONFIG.city.placeholder}
-                getValue={FILTER_CONFIG.city.getValue}
-                getLabel={FILTER_CONFIG.city.getLabel}
-                getKey={FILTER_CONFIG.city.getKey}
-              />
-              <FilterSelect
-                label={FILTER_CONFIG.commune.label}
-                value={filters.commune}
-                onChange={(e) => handleFilterChange("commune", e.target.value)}
-                options={communesLoader.data}
-                disabled={isLoading || !filters.city || communesLoader.data.length === 0}
-                placeholder={FILTER_CONFIG.commune.placeholder}
-                getValue={FILTER_CONFIG.commune.getValue}
-                getLabel={FILTER_CONFIG.commune.getLabel}
-                getKey={FILTER_CONFIG.commune.getKey}
-              />
-              <FilterSelect
-                label={FILTER_CONFIG.quartier.label}
-                value={filters.quartier}
-                onChange={(e) => handleFilterChange("quartier", e.target.value)}
-                options={quartiersLoader.data}
-                disabled={isLoading || !filters.commune || quartiersLoader.data.length === 0}
-                placeholder={FILTER_CONFIG.quartier.placeholder}
-                getValue={FILTER_CONFIG.quartier.getValue}
-                getLabel={FILTER_CONFIG.quartier.getLabel}
-                getKey={FILTER_CONFIG.quartier.getKey}
-              />
-            </div>
+            {!error && (
+              <div className="text-sm text-gray-700">
+                Emplacements (latitude / longitude)
+              </div>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
@@ -690,9 +664,9 @@ export function AgentPage() {
               </div>
             )}
 
-            {!isLoading && filters.commune && agents.length === 0 && (
+            {!isLoading && agents.length === 0 && (
               <div className="text-center py-12 text-gray-500">
-                Aucun point de vente trouvé pour cette localisation
+                Aucun point de vente trouvé
               </div>
             )}
 
@@ -752,44 +726,37 @@ export function AgentPage() {
 
         {/* Mobile list only */}
         <div className="md:hidden relative z-10 bg-gray-50 p-4">
-          {!filters.commune ? (
-            <div className="text-center py-8 text-gray-500">
-              Veuillez sélectionner une localisation pour voir les points de vente disponibles
+          {isLoading && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#007F68]" />
+              <p className="mt-4 text-gray-600">Chargement...</p>
             </div>
-          ) : (
-            <>
-              {isLoading && (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#007F68]" />
-                  <p className="mt-4 text-gray-600">Chargement...</p>
-                </div>
-              )}
-              {!isLoading && agents.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  Aucun point de vente trouvé pour cette localisation
-                </div>
-              )}
-              {!isLoading && agents.length > 0 && (
-                <div className="grid grid-cols-1 gap-4">
-                  {agents.map((agent, index) => {
-                    const agentId = agent.codeAgence || agent.login || agent.telephone || `agent-${index}`;
-                    const lat = parseFloat(agent.latitude || agent.lat);
-                    const lng = parseFloat(agent.longitude || agent.lng);
-                    const { latText, lngText } = formatLatLng(lat, lng);
-                    return (
-                      <div key={`agent-${agentId}-${index}`} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                        <div className="text-sm text-gray-900 font-semibold">
-                          Latitude: <span className="font-mono">{latText}</span>
-                        </div>
-                        <div className="mt-1 text-sm text-gray-700">
-                          Longitude: <span className="font-mono">{lngText}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </>
+          )}
+          {!isLoading && agents.length === 0 && (
+            <div className="text-center py-8 text-gray-500">Aucun point de vente trouvé</div>
+          )}
+          {!isLoading && agents.length > 0 && (
+            <div className="grid grid-cols-1 gap-4">
+              {agents.map((agent, index) => {
+                const agentId = agent.codeAgence || agent.login || agent.telephone || `agent-${index}`;
+                const lat = parseFloat(agent.latitude || agent.lat);
+                const lng = parseFloat(agent.longitude || agent.lng);
+                const { latText, lngText } = formatLatLng(lat, lng);
+                return (
+                  <div
+                    key={`agent-${agentId}-${index}`}
+                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+                  >
+                    <div className="text-sm text-gray-900 font-semibold">
+                      Latitude: <span className="font-mono">{latText}</span>
+                    </div>
+                    <div className="mt-1 text-sm text-gray-700">
+                      Longitude: <span className="font-mono">{lngText}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { post } from "@/api/client";
+import { post, postRaw } from "@/api/client";
 
 type Criteria = Record<string, unknown>;
 
@@ -25,12 +25,14 @@ export async function getQuartiers(communeId: string) {
 }
 
 export async function getAgents(communeId: string) {
-  const { data } = await post("/wUtilisateur/recherchePdvProche", {
-    telephone: "Mff4Z8l6EPVWrLiGOlYGNw==",
-    idwCommunes: communeId || "",
-    latitude: "",
-    longitude: "",
-  });
+  void communeId;
+  const { data } = await postRaw(
+    "/wUtilisateur/rechercheAllPdv",
+    {
+      data: {},
+    },
+    { forceToken: true }
+  );
   return data as any;
 }
 
