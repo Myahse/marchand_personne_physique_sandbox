@@ -3,6 +3,7 @@ export type EndpointId =
   | "otp-send"
   | "otp-verify"
   | "search-client-by-phone"
+  | "solde-partenaire"
   | "payment"
   | "virement-fournisseur"
   | "mouvement-compte";
@@ -19,6 +20,7 @@ export const ENDPOINT_LIST: {
   { id: "otp-send", label: "Envoi code OTP", method: "POST", path: "/wClients/code-partenaire" },
   { id: "otp-verify", label: "Vérif. code OTP", method: "POST", path: "/wClients/verifcode-partenaire" },
   { id: "search-client-by-phone", label: "Recherche payeur", method: "POST", path: "/wClients/recherchePayeur" },
+  { id: "solde-partenaire", label: "Solde partenaire", method: "POST", path: "/wClients/soldePartenaire" },
   { id: "payment", label: "Paiement", method: "POST", path: "/paiement-partenaire/create" },
   {
     id: "virement-fournisseur",

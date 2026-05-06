@@ -30,6 +30,7 @@ import { VirementFournisseurView } from "@/views/VirementFournisseurView";
 import { LoginView } from "@/views/LoginView";
 import { DocsPage } from "@/views/DocsPage";
 import { AgentPage } from "@/views/AgentPage";
+import { SoldePartenaireView } from "@/views/SoldePartenaireView";
 
 function normalizePhone(phone: string): string {
   let digits = phone.replace(/\D/g, "");
@@ -125,6 +126,10 @@ export default function App() {
   const [searchPayeurPays, setSearchPayeurPays] = useState("CI");
   const [searchPayeurResult, setSearchPayeurResult] = useState<object | string | null>(null);
 
+  const [soldeCompte, setSoldeCompte] = useState("");
+  const [soldeGsmPrincipale, setSoldeGsmPrincipale] = useState("");
+  const [soldeResult, setSoldeResult] = useState<object | string | null>(null);
+
   const [payCompteDebit, setPayCompteDebit] = useState("");
   const [payCompteCredit, setPayCompteCredit] = useState("");
   /** Type of debit account: P = principal (phone), S = secondary, C = default. Sent as typeCompteDebit. */
@@ -219,6 +224,25 @@ export default function App() {
       setSearchPayeurResult(data as object);
     } catch (e) {
       setSearchPayeurResult({ error: String(e) });
+    }
+  };
+
+  const handleSoldePartenaire = async () => {
+    setSoldeResult(null);
+    const compte = soldeCompte.trim();
+    const gsmPrincipale = soldeGsmPrincipale.trim();
+    if (!compte || !gsmPrincipale) {
+      setSoldeResult("Compte et GSM principale (login) requis.");
+      return;
+    }
+    try {
+      const { data } = await post(getPathForEndpoint("solde-partenaire"), {
+        compte,
+        gsmPrincipale,
+      });
+      setSoldeResult(data as object);
+    } catch (e) {
+      setSoldeResult({ error: String(e) });
     }
   };
 
@@ -528,6 +552,16 @@ export default function App() {
               setPays={setSearchPayeurPays}
               result={searchPayeurResult}
               onSearch={handleSearchPayeur}
+            />
+          )}
+          {selectedEndpoint === "solde-partenaire" && (
+            <SoldePartenaireView
+              compte={soldeCompte}
+              setCompte={setSoldeCompte}
+              gsmPrincipale={soldeGsmPrincipale}
+              setGsmPrincipale={setSoldeGsmPrincipale}
+              result={soldeResult}
+              onFetch={handleSoldePartenaire}
             />
           )}
           {selectedEndpoint === "payment" && (

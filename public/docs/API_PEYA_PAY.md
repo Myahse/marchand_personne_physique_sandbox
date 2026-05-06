@@ -439,6 +439,7 @@ La réponse est au format JSON et peut contenir :
 | POST | `/vMvtopMvtc/mvtsComptes-partenaire` | Mouvements de compte *(MVM comptes)* |
 | POST | `/wVirement/create` | Virement fournisseur *(paiement fournisseur)* |
 | POST | `/wUtilisateur/rechercheAllPdv` | Liste des points de vente (PDV) — Agents *(longitude/latitude)* |
+| POST | `/wClients/soldePartenaire` | Solde partenaire *(balance)* |
 
 ---
 
@@ -468,6 +469,50 @@ La réponse peut contenir selon l’instance :
 - `status` : objet avec `code` et `message`
 - `count` : nombre d’éléments
 - `items` ou `item` : données retournées *(selon l’instance backend)*
+
+---
+
+## API #10 : Solde partenaire (balance)
+
+Permet de récupérer le solde d’un compte (balance) côté partenaire.
+**Authentification requise** : `Authorization: Bearer TOKEN`.
+
+| Propriété | Valeur |
+|------------|--------|
+| **Méthode** | POST |
+| **Endpoint** | `$url/wClients/soldePartenaire` |
+
+### Paramètres (dans `data`)
+
+| Paramètre | Description |
+|----------|-------------|
+| `compte` | Numéro de compte / téléphone dont on veut le solde |
+| `gsmPrincipale` | Login partenaire (GSM principale) |
+
+### Body (attendu)
+
+```json
+{
+  "data": {
+    "compte": "0102030405",
+    "gsmPrincipale": "0102030405"
+  }
+}
+```
+
+### Réponse (exemple)
+
+```json
+{
+  "status": { "code": "800", "message": "Operation effectuee avec succes: " },
+  "hasError": false,
+  "item": {
+    "soldedispo": 299500,
+    "soldecompta": 155900,
+    "soldeautorisation": 0
+  }
+}
+```
 
 **Documentation API PEYA PAY — Sandbox Partenaires**
 
